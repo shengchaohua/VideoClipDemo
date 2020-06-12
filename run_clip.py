@@ -18,19 +18,21 @@ def extract_audio_from_video(video, output_audio):
     ff.run()
 
 
-def cut_wav(input_dir, wav_name, output_dir, duration=25):
+def cut_wav(wav, output_dir, duration=25):
     """
     切割音频，以一定的时间间隔
-    :param input_dir: 输入文件夹
-    :param wav_name: 输入wav音频文件名
+    :param wav: wav音频文件
     :param output_dir: 输出文件夹
     :param duration: 时间间隔，单位秒
     :return:
     """
     from math import ceil
 
-    wav_path = os.path.join(input_dir, wav_name)
-    audio = AudioSegment.from_mp3(wav_path)
+    wav_tuple = os.path.splitext(wav)
+    assert wav_tuple[1] == ".wav"
+    wav_name = wav_tuple[0]
+
+    audio = AudioSegment.from_mp3(wav)
 
     length = len(audio)
     num_segment = ceil(length / (duration * 1000))
@@ -39,7 +41,7 @@ def cut_wav(input_dir, wav_name, output_dir, duration=25):
         start_time = i * duration * 1000
         end_time = min(start_time + 25 * 1000, length)
         sliced_audio = audio[start_time:end_time]
-        cutted_wav = os.path.join(output_dir, wav_name.split(".")[0] + "-" + str(i) + ".wav")
+        cutted_wav = os.path.join(output_dir, wav_name + "-" + str(i) + ".wav")
         sliced_audio.export(cutted_wav, format="wav")
 
 
@@ -75,7 +77,7 @@ if __name__ == "__main__":
     extract_audio_from_video(video_path, output_audio_path)
 
     # 2. 切割音频
-    cut_wav(output_dir, output_audio_name, output_dir)
+    cut_wav(output_audio_path, output_dir)
     os.remove(output_audio_path)
 
     # 3. 音频格式转换
